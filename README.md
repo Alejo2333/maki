@@ -1,6 +1,6 @@
 # Maki
 
-**Your project. Your structure. Your way.** Presets are starting points, never restrictions.
+ Presets are starting points, never restrictions.
 
 The blueprint is data, generation is a pure pipeline:
 

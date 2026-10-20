@@ -1,3 +1,3 @@
-"""Maki: customizable project scaffolding. Your project. Your structure. Your way."""
+"""Maki: customizable project scaffolding."""
 
 __version__ = "0.1.0"
