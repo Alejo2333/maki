@@ -1,0 +1,19 @@
+{
+  "project": {
+    "name": "Shop"
+  },
+  "project_type": "backend",
+  "layout": "single",
+  "architecture": "layer",
+  "deployment": "none",
+  "stack": {
+    "framework": "fastapi"
+  },
+  "features": {
+    "database": {
+      "engine": "sqlite"
+    },
+    "tests": {},
+    "lint": {}
+  }
+}

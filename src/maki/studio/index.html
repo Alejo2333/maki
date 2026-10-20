@@ -1,0 +1,1754 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Maki Studio</title>
+    <style>
+      :root {
+        --bg: #f4f5f2;
+        --pane: #fbfbf9;
+        --card: #fff;
+        --ink: #17231d;
+        --mute: #667369;
+        --line: #dde2db;
+        --acc: #1f7a5a;
+        --acc-ink: #fff;
+        --accsoft: #e3f1ea;
+        --err: #b3261e;
+        --errsoft: #fbe9e7;
+        --warn: #8a5a00;
+        --warnsoft: #fbf1da;
+        --r: 10px;
+        --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1713;
+          --pane: #141e19;
+          --card: #1a2620;
+          --ink: #e6eee9;
+          --mute: #8da096;
+          --line: #27372f;
+          --acc: #5fc79a;
+          --acc-ink: #07261a;
+          --accsoft: #163226;
+          --err: #ff8f86;
+          --errsoft: #3a1d1b;
+          --warn: #e8bb55;
+          --warnsoft: #352a10;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--acc);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+      .btn {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 12px;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        border-color: var(--acc);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn.pri {
+        background: var(--acc);
+        color: var(--acc-ink);
+        border-color: var(--acc);
+        font-weight: 600;
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: transparent;
+        padding: 5px 8px;
+      }
+      .btn.ghost:hover {
+        background: var(--accsoft);
+      }
+      .btn.sm {
+        padding: 3px 8px;
+        font-size: 12.5px;
+      }
+      svg.i {
+        width: 15px;
+        height: 15px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+        background: var(--pane);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+      .tag {
+        color: var(--mute);
+        font-size: 12.5px;
+      }
+      .grow {
+        flex: 1;
+      }
+      .pill {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 12.5px;
+        background: var(--accsoft);
+        color: var(--acc);
+        font-weight: 600;
+      }
+      .pill.err {
+        background: var(--errsoft);
+        color: var(--err);
+      }
+      .pill.warn {
+        background: var(--warnsoft);
+        color: var(--warn);
+      }
+      .pill:before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      main {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 350px minmax(280px, 1fr) minmax(340px, 1.25fr);
+      }
+      .pane {
+        min-height: 0;
+        overflow: auto;
+        border-right: 1px solid var(--line);
+        background: var(--pane);
+      }
+      .pane:last-child {
+        border: 0;
+      }
+      .pane-h {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--pane);
+        padding: 12px 16px 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .pane-h h2 {
+        margin: 0;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--mute);
+      }
+      .body {
+        padding: 14px 16px 28px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 10px;
+        font-weight: 650;
+      }
+      .step b {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--accsoft);
+        color: var(--acc);
+        font-size: 11.5px;
+        display: grid;
+        place-items: center;
+      }
+      .lbl {
+        display: block;
+        font-size: 12px;
+        color: var(--mute);
+        margin: 10px 0 4px;
+      }
+      input[type="text"],
+      select {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 7px 9px;
+      }
+      .seg {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 13px;
+      }
+      .chip:hover {
+        border-color: var(--acc);
+      }
+      .chip[aria-pressed="true"] {
+        background: var(--accsoft);
+        border-color: var(--acc);
+        color: var(--acc);
+        font-weight: 600;
+      }
+      .feat {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2px 10px;
+        padding: 9px 0;
+        border-top: 1px solid var(--line);
+      }
+      .feat:first-of-type {
+        border-top: 0;
+      }
+      .feat.off {
+        opacity: 0.5;
+      }
+      .feat strong {
+        font-weight: 600;
+      }
+      .feat small {
+        color: var(--mute);
+        grid-column: 1;
+      }
+      .feat .opts {
+        grid-column: 1/-1;
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+      }
+      .feat .opts select {
+        padding: 4px 6px;
+        font-size: 12.5px;
+      }
+      .sw {
+        position: relative;
+        width: 34px;
+        height: 20px;
+        align-self: start;
+      }
+      .sw input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        margin: 0;
+        cursor: pointer;
+      }
+      .sw i {
+        position: absolute;
+        inset: 0;
+        border-radius: 99px;
+        background: var(--line);
+        transition: 0.15s;
+        pointer-events: none;
+      }
+      .sw i:after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        transition: 0.15s;
+      }
+      .sw input:checked + i {
+        background: var(--acc);
+      }
+      .sw input:checked + i:after {
+        left: 16px;
+      }
+      .sw input:focus-visible + i {
+        outline: 2px solid var(--acc);
+        outline-offset: 2px;
+      }
+      .tools {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .search {
+        flex: 1;
+        min-width: 110px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 8px;
+      }
+      .search input {
+        border: 0;
+        background: transparent;
+        padding: 6px 0;
+        outline: 0;
+        width: 100%;
+      }
+      ul.tree {
+        list-style: none;
+        margin: 0;
+        padding: 6px 8px;
+        font: 13px/1.3 var(--mono);
+      }
+      .row {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        border-radius: 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .row[draggable="true"] {
+        cursor: grab;
+      }
+      .row.dragging {
+        opacity: 0.4;
+      }
+      .row[data-drop="inside"] {
+        background: var(--accsoft);
+        outline: 2px solid var(--acc);
+      }
+      .row[data-drop="before"]::before,
+      .row[data-drop="after"]::before {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        height: 2px;
+        background: var(--acc);
+        content: "";
+      }
+      .row[data-drop="before"]::before {
+        top: -3px;
+      }
+      .row[data-drop="after"]::before {
+        bottom: -3px;
+      }
+      .row[data-drop-label]::after {
+        position: absolute;
+        z-index: 1;
+        right: 4px;
+        top: 50%;
+        padding: 2px 6px;
+        border-radius: 5px;
+        background: var(--acc);
+        color: var(--acc-ink);
+        font: 11px/1.3 system-ui, sans-serif;
+        content: attr(data-drop-label);
+        transform: translateY(-50%);
+      }
+      .row:hover {
+        background: var(--accsoft);
+      }
+      .row[aria-selected="true"] {
+        background: var(--accsoft);
+        box-shadow: inset 2px 0 var(--acc);
+      }
+      .row .nm {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .row .i {
+        color: var(--mute);
+      }
+      .row.dir .i {
+        color: var(--acc);
+      }
+      .ori {
+        font: 11px var(--mono);
+        padding: 1px 6px;
+        border-radius: 99px;
+        background: var(--bg);
+        color: var(--mute);
+        border: 1px solid var(--line);
+      }
+      .ori.custom {
+        color: var(--acc);
+        border-color: var(--acc);
+      }
+      .chev {
+        width: 14px;
+        transition: transform 0.12s;
+      }
+      .closed .chev {
+        transform: rotate(-90deg);
+      }
+      .tree-menu {
+        position: fixed;
+        z-index: 8;
+        min-width: 180px;
+        padding: 5px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+      .tree-menu[hidden] {
+        display: none;
+      }
+      .tree-menu button {
+        display: block;
+        width: 100%;
+        padding: 7px 9px;
+        text-align: left;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+      }
+      .tree-menu button:hover,
+      .tree-menu button:focus-visible {
+        background: var(--accsoft);
+        outline: 0;
+      }
+      .tree-menu button.danger {
+        color: var(--err);
+      }
+      .tree-menu hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 4px 2px;
+      }
+      .empty {
+        padding: 36px 20px;
+        text-align: center;
+        color: var(--mute);
+      }
+      .crumb {
+        font: 13px var(--mono);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .dirty {
+        color: var(--warn);
+        font-size: 12px;
+      }
+      textarea#content {
+        display: block;
+        width: 100%;
+        min-height: 340px;
+        height: calc(100vh - 330px);
+        resize: vertical;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 12px;
+        font: 13px/1.55 var(--mono);
+        tab-size: 4;
+        white-space: pre;
+      }
+      .iss {
+        display: flex;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        margin-top: 6px;
+        font-size: 13px;
+        background: var(--warnsoft);
+        color: var(--warn);
+      }
+      .iss.error {
+        background: var(--errsoft);
+        color: var(--err);
+      }
+      .ok {
+        color: var(--acc);
+        padding: 6px 2px;
+        font-size: 13px;
+      }
+      dialog {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--card);
+        color: var(--ink);
+        padding: 20px;
+        width: min(440px, 92vw);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+      dialog::backdrop {
+        background: rgba(8, 16, 12, 0.5);
+      }
+      dialog h3 {
+        margin: 0 0 4px;
+      }
+      dialog p {
+        margin: 0 0 10px;
+        color: var(--mute);
+      }
+      .acts {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 16px;
+      }
+      .chk {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 12px;
+      }
+      .res {
+        margin-top: 12px;
+        font-size: 13px;
+        max-height: 140px;
+        overflow: auto;
+      }
+      .res.err {
+        color: var(--err);
+      }
+      #toast {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--ink);
+        color: var(--bg);
+        padding: 9px 16px;
+        border-radius: 99px;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.2s;
+        z-index: 9;
+      }
+      #toast.on {
+        opacity: 1;
+        transform: translateX(-50%);
+      }
+      nav.tabs {
+        display: none;
+      }
+      @media (max-width: 960px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        .pane {
+          display: none;
+          border: 0;
+        }
+        main[data-view="cfg"] #cfg,
+        main[data-view="tree"] #treePane,
+        main[data-view="edit"] #editPane {
+          display: block;
+        }
+        nav.tabs {
+          display: flex;
+          border-top: 1px solid var(--line);
+          background: var(--pane);
+        }
+        nav.tabs button {
+          flex: 1;
+          border: 0;
+          background: none;
+          padding: 12px 4px;
+          color: var(--mute);
+        }
+        nav.tabs button[aria-selected="true"] {
+          color: var(--acc);
+          font-weight: 700;
+          box-shadow: inset 0 2px var(--acc);
+        }
+        .tag,
+        .hide-s {
+          display: none;
+        }
+        textarea#content {
+          height: 50vh;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <circle cx="13" cy="13" r="12" fill="var(--acc)" />
+          <circle
+            cx="13"
+            cy="13"
+            r="7.5"
+            fill="none"
+            stroke="var(--acc-ink)"
+            stroke-width="2"
+          />
+          <circle cx="13" cy="13" r="3" fill="var(--acc-ink)" /></svg
+        >Maki Studio
+      </div>
+      <span class="tag">Your project. Your structure. Your way.</span>
+      <div class="grow"></div>
+      <span id="status" class="pill" role="status">Loading…</span>
+      <button class="btn hide-s" id="imp">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg
+        >Import
+      </button>
+      <button class="btn hide-s" id="exp">
+        <svg class="i" viewBox="0 0 24 24">
+          <path d="M12 15V3m0 0L8 7m4-4l4 4M5 21h14" /></svg
+        >Export
+      </button>
+      <button class="btn pri" id="download">
+        <svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" /></svg
+        >Download ZIP
+      </button>
+      <input type="file" id="impf" accept=".json" hidden />
+    </header>
+
+    <main id="main" data-view="cfg">
+      <section class="pane" id="cfg" aria-label="Configuration"></section>
+
+      <section class="pane" id="treePane" aria-label="Project structure">
+        <div class="pane-h">
+          <h2>5 · Structure</h2>
+          <div class="grow"></div>
+          <span class="tag" id="count"></span>
+        </div>
+        <div class="tools">
+          <label class="search"
+            ><svg class="i" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-4-4" /></svg
+            ><input
+              id="q"
+              type="search"
+              placeholder="Filter files"
+              aria-label="Filter files"
+          /></label>
+          <button class="btn sm" id="addFile" title="New file">
+            <svg class="i" viewBox="0 0 24 24">
+              <path
+                d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M12 12v5M9.5 14.5h5"
+              /></svg
+            >File
+          </button>
+          <button class="btn sm" id="addDir" title="New folder">
+            <svg class="i" viewBox="0 0 24 24">
+              <path
+                d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2zM12 10v5M9.5 12.5h5"
+              /></svg
+            >Folder
+          </button>
+          <button class="btn sm" id="mv" title="Rename or move">Rename</button>
+          <button class="btn sm" id="rm" title="Remove">Remove</button>
+          <button class="btn sm" id="cp" title="Copy tree as text">
+            Copy tree
+          </button>
+        </div>
+        <ul class="tree" id="tree" role="tree" aria-label="Files"></ul>
+        <div id="treeMenu" class="tree-menu" role="menu" hidden></div>
+      </section>
+
+      <section class="pane" id="editPane" aria-label="Editor">
+        <div class="pane-h">
+          <h2>6 · Content</h2>
+          <span class="crumb" id="fname">No file selected</span
+          ><span class="dirty" id="dirty" hidden>● unsaved</span>
+          <div class="grow"></div>
+          <button class="btn sm" id="revert" disabled>Revert</button
+          ><button class="btn sm pri" id="save" disabled>Save</button>
+        </div>
+        <div class="body">
+          <textarea
+            id="content"
+            spellcheck="false"
+            aria-label="File content"
+            disabled
+            placeholder="Pick a file in the tree to view or edit its content."
+          ></textarea>
+          <p class="tag" id="hint" style="margin: 8px 2px 0">
+            Saving stores your edit in the blueprint as custom content.
+            <kbd>Ctrl/⌘ + S</kbd>
+          </p>
+          <h2
+            style="
+              font-size: 12px;
+              text-transform: uppercase;
+              letter-spacing: 0.07em;
+              color: var(--mute);
+              margin: 22px 0 4px;
+            "
+          >
+            7 · Checks
+          </h2>
+          <div id="issues" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-v="cfg" aria-selected="true">Setup</button>
+      <button role="tab" data-v="tree" aria-selected="false">Files</button>
+      <button role="tab" data-v="edit" aria-selected="false">Editor</button>
+    </nav>
+
+    <dialog id="dlg">
+      <form method="dialog" id="dform">
+        <h3 id="dt"></h3>
+        <p id="dd"></p>
+        <input type="text" id="dv" autocomplete="off" spellcheck="false" />
+        <div class="acts">
+          <button class="btn" value="cancel" type="button" id="dno">
+            Cancel</button
+          ><button class="btn pri" id="dyes">OK</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" role="status"></div>
+
+    <script>
+      const token =
+        new URLSearchParams(location.hash.slice(1)).get("token") || "";
+      const api = (p, body) =>
+        fetch("/api/" + p, {
+          method: body ? "POST" : "GET",
+          headers: {
+            "X-Maki-Token": token,
+            "Content-Type": "application/json",
+          },
+          body: body && JSON.stringify(body),
+        }).then(async (r) => {
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok)
+            throw new Error(
+              typeof j.detail === "string" ? j.detail : r.statusText,
+            );
+          return j;
+        });
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const ico = {
+        dir: '<svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>',
+        file: '<svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5"/></svg>',
+        chev: '<svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+      };
+      let cat,
+        bp = {
+          schema_version: 1,
+          project: { name: "My App" },
+          project_type: "backend",
+          layout: "single",
+          architecture: "layer",
+          deployment: "none",
+          stack: { framework: "fastapi" },
+          features: {},
+          overrides: [],
+        };
+      let files = [],
+        dirs = [],
+        issues = [],
+        sel = null,
+        contextTarget = { path: "", dir: true },
+        treeOrder = new Map(),
+        dragSource = null,
+        dragTarget = null,
+        closed = new Set(),
+        query = "",
+        dirty = false,
+        timer,
+        toastT;
+
+      function toast(m) {
+        const t = $("toast");
+        t.textContent = m;
+        t.classList.add("on");
+        clearTimeout(toastT);
+        toastT = setTimeout(() => t.classList.remove("on"), 2600);
+      }
+      function ask(title, desc, val, ok = "OK") {
+        return new Promise((res) => {
+          const d = $("dlg");
+          $("dt").textContent = title;
+          $("dd").textContent = desc;
+          $("dv").value = val || "";
+          $("dyes").textContent = ok;
+          const done = (v) => {
+            d.close();
+            $("dform").onsubmit = null;
+            $("dno").onclick = null;
+            res(v);
+          };
+          $("dform").onsubmit = (e) => {
+            e.preventDefault();
+            done($("dv").value.trim() || null);
+          };
+          $("dno").onclick = () => done(null);
+          d.oncancel = () => res(null);
+          d.showModal();
+          $("dv").focus();
+          $("dv").select();
+        });
+      }
+
+      /* ---------- configuration ---------- */
+      const seg = (key, vals, cur, labels = {}) =>
+        `<div class="seg" role="group">${vals.map((v) => `<button type="button" class="chip" data-set="${key}" data-v="${esc(v)}" aria-pressed="${v === cur}">${esc(labels[v] || v)}</button>`).join("")}</div>`;
+      function renderCfg() {
+        const P = cat.presets,
+          back = P.filter((p) => p.kind === "backend"),
+          front = P.filter((p) => p.kind === "frontend");
+        const cur = P.find((p) => p.id === bp.stack.framework),
+          lab = Object.fromEntries(P.map((p) => [p.id, p.label]));
+        const fwList = (bp.project_type === "frontend" ? front : back).map(
+          (p) => p.id,
+        );
+        const active = [bp.stack.framework, bp.frontend?.framework].filter(
+          Boolean,
+        );
+        $("cfg").innerHTML = `
+ <div class="pane-h"><h2>Setup</h2></div><div class="body">
+ <div class="card"><p class="step"><b>1</b>Project</p>
+  <label class="lbl" for="name">Name</label><input type="text" id="name" value="${esc(bp.project.name)}">
+  <label class="lbl">Type</label>${seg("ptype", ["backend", "frontend", "full-stack"], bp.project_type)}</div>
+ <div class="card"><p class="step"><b>2</b>Stack</p>
+  <label class="lbl">${bp.project_type === "full-stack" ? "Backend framework" : "Framework"}</label>${seg("fw", fwList, bp.stack.framework, lab)}
+  ${
+    bp.project_type === "full-stack"
+      ? `<label class="lbl">Frontend framework</label>${seg(
+          "fe",
+          front.map((p) => p.id),
+          bp.frontend?.framework,
+          lab,
+        )}`
+      : ""
+  }</div>
+ <div class="card"><p class="step"><b>3</b>Shape</p>
+  <label class="lbl">Application architecture</label>${seg("arch", cur?.architectures || [], bp.architecture)}
+  <label class="lbl">Repository layout</label>${seg("layout", ["single", "monorepo", "multi-service"], bp.layout)}
+  <label class="lbl">Deployment</label>${seg("dep", ["none", "container", "compose"], bp.deployment)}</div>
+ <div class="card"><p class="step"><b>4</b>Features</p>${cat.features
+   .map((f) => {
+     const on = f.id in bp.features,
+       bad = f.frameworks && !active.some((a) => f.frameworks.includes(a));
+     return `<div class="feat ${bad ? "off" : ""}"><label for="f_${f.id}"><strong>${esc(f.label)}</strong></label>
+  <span class="sw"><input type="checkbox" id="f_${f.id}" data-f="${f.id}" ${on ? "checked" : ""} ${bad ? "disabled" : ""}><i></i></span>
+  <small>${esc(f.description)}${bad ? ` (works with ${esc(f.frameworks.join(", "))})` : ""}${f.requires.length ? ` · needs ${esc(f.requires.join(", "))}` : ""}</small>
+  ${
+    on && Object.keys(f.inputs).length
+      ? `<div class="opts">${Object.entries(f.inputs)
+          .map(
+            ([k, i]) =>
+              `<select data-fi="${f.id}.${k}" aria-label="${esc(f.label)} ${esc(k)}">${i.choices.map((c) => `<option ${c === (bp.features[f.id]?.[k] ?? i.default) ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>`,
+          )
+          .join("")}</div>`
+      : ""
+  }</div>`;
+   })
+   .join("")}</div></div>`;
+      }
+      function fixArch() {
+        const c = cat.presets.find((p) => p.id === bp.stack.framework);
+        if (c && !c.architectures.includes(bp.architecture))
+          bp.architecture = c.architectures[0];
+      }
+      const SET = {
+        ptype(v) {
+          const P = cat.presets,
+            back = P.filter((p) => p.kind === "backend"),
+            front = P.filter((p) => p.kind === "frontend");
+          bp.project_type = v;
+          if (v === "full-stack") {
+            bp.layout = "monorepo";
+            bp.frontend ||= { framework: (front[0] || {}).id };
+            bp.stack.framework = back[0].id;
+          } else {
+            bp.frontend = null;
+            bp.layout = "single";
+            bp.stack.framework = (v === "frontend" ? front : back)[0].id;
+          }
+          fixArch();
+        },
+        fw(v) {
+          bp.stack.framework = v;
+          fixArch();
+        },
+        fe(v) {
+          bp.frontend = { framework: v };
+        },
+        arch(v) {
+          bp.architecture = v;
+        },
+        layout(v) {
+          bp.layout = v;
+        },
+        dep(v) {
+          bp.deployment = v;
+        },
+      };
+      $("cfg").addEventListener("click", (e) => {
+        const b = e.target.closest("[data-set]");
+        if (!b) return;
+        SET[b.dataset.set](b.dataset.v);
+        renderCfg();
+        refresh();
+      });
+      $("cfg").addEventListener("input", (e) => {
+        if (e.target.id === "name") {
+          bp.project.name = e.target.value;
+          refresh();
+        }
+      });
+      $("cfg").addEventListener("change", (e) => {
+        const t = e.target;
+        if (t.dataset.f) {
+          const f = cat.features.find((x) => x.id === t.dataset.f);
+          if (t.checked) {
+            bp.features[f.id] ||= {};
+            const need = f.requires.filter((r) => !(r in bp.features));
+            need.forEach((r) => (bp.features[r] = {}));
+            if (need.length) toast(`Also enabled ${need.join(", ")}`);
+          } else delete bp.features[f.id];
+          renderCfg();
+          refresh();
+        } else if (t.dataset.fi) {
+          const [f, k] = t.dataset.fi.split(".");
+          (bp.features[f] ||= {})[k] = t.value;
+          refresh();
+        }
+      });
+
+      /* ---------- tree ---------- */
+      function build() {
+        const root = { kids: new Map(), dir: true, path: "" };
+        const add = (p, isDir, f) => {
+          let n = root;
+          const parts = p.split("/").filter(Boolean);
+          parts.forEach((part, i) => {
+            const last = i === parts.length - 1,
+              path = parts.slice(0, i + 1).join("/");
+            let k = n.kids.get(part);
+            if (!k) {
+              k = {
+                name: part,
+                path,
+                dir: !last || isDir,
+                kids: new Map(),
+                file: null,
+              };
+              n.kids.set(part, k);
+            }
+            if (last && !isDir) k.file = f;
+            n = k;
+          });
+        };
+        const q = query.toLowerCase();
+        if (!q) dirs.forEach((d) => add(d, true));
+        files
+          .filter((f) => !q || f.path.toLowerCase().includes(q))
+          .forEach((f) => add(f.path, false, f));
+        return root;
+      }
+      const ori = (o) => {
+        const s = String(o || "");
+        const c = /^(preset|feature):/.test(s);
+        return `<span class="ori ${c ? "" : "custom"}">${esc(c ? s.replace(/^\w+:/, "") : "custom")}</span>`;
+      };
+      function rows(n, depth, out) {
+        orderedChildren(n)
+          .forEach((k) => {
+            const pad = `padding-left:${6 + depth * 16}px`;
+            if (k.dir) {
+              const open = query || !closed.has(k.path);
+              out.push(
+                `<li role="none"><div class="row dir ${open ? "" : "closed"}" role="treeitem" draggable="true" aria-expanded="${!!open}" aria-selected="${k.path === contextTarget.path}" tabindex="0" data-dir="${esc(k.path)}" style="${pad}">${ico.chev}${ico.dir}<span class="nm">${esc(k.name)}</span></div></li>`,
+              );
+              if (open) rows(k, depth + 1, out);
+            } else
+              out.push(
+                `<li role="none"><div class="row" role="treeitem" draggable="true" aria-selected="${k.path === sel || k.path === contextTarget.path}" tabindex="0" data-p="${esc(k.path)}" style="${pad}"><span style="width:14px"></span>${ico.file}<span class="nm">${esc(k.name)}</span>${ori(k.file?.origin)}</div></li>`,
+              );
+          });
+      }
+      function orderedChildren(node) {
+        const sorted = [...node.kids.values()].sort(
+          (a, b) => b.dir - a.dir || a.name.localeCompare(b.name),
+        );
+        const order = treeOrder.get(node.path);
+        if (!order) return sorted;
+        const positions = new Map(order.map((path, index) => [path, index]));
+        return sorted.sort((a, b) => {
+          const ai = positions.get(a.path),
+            bi = positions.get(b.path);
+          if (ai !== undefined && bi !== undefined) return ai - bi;
+          if (ai !== undefined) return -1;
+          if (bi !== undefined) return 1;
+          return 0;
+        });
+      }
+      function renderTree() {
+        const out = [];
+        rows(build(), 0, out);
+        $("tree").innerHTML =
+          out.join("") ||
+          `<li class="empty">${query ? "No files match." : "Nothing to show yet. Pick a stack on the left."}</li>`;
+        $("count").textContent = `${files.length} files`;
+      }
+      function closeTreeMenu() {
+        $("treeMenu").hidden = true;
+      }
+      function openTreeMenu(event, row) {
+        event.preventDefault();
+        const dir = row ? row.dataset.dir !== undefined : true;
+        contextTarget = {
+          path: row ? (dir ? row.dataset.dir : row.dataset.p) : "",
+          dir,
+        };
+        renderTree();
+        const menu = $("treeMenu"),
+          actions = [
+            ...(contextTarget.dir
+              ? [
+                  ["new-file", "New file"],
+                  ["new-folder", "New folder"],
+                ]
+              : [["open", "Open / edit"]]),
+            ...(contextTarget.path
+              ? [
+                  ["rename", contextTarget.dir ? "Rename / move folder" : "Rename / move file"],
+                  ["remove", contextTarget.dir ? "Remove folder and contents" : "Remove file"],
+                ]
+              : []),
+          ];
+        menu.innerHTML = actions
+          .map(
+            ([action, label], i) =>
+              `${i === 2 && contextTarget.path ? "<hr>" : ""}<button type="button" role="menuitem" data-action="${action}">${label}</button>`,
+          )
+          .join("");
+        menu.hidden = false;
+        const x = Math.min(event.clientX, innerWidth - menu.offsetWidth - 8),
+          y = Math.min(event.clientY, innerHeight - menu.offsetHeight - 8);
+        menu.style.left = `${Math.max(8, x)}px`;
+        menu.style.top = `${Math.max(8, y)}px`;
+        menu.querySelector("button")?.focus();
+      }
+      $("tree").addEventListener("contextmenu", (e) => {
+        openTreeMenu(e, e.target.closest(".row"));
+      });
+      $("tree").addEventListener("click", closeTreeMenu);
+      $("treeMenu").addEventListener("click", async (e) => {
+        const action = e.target.closest("[data-action]")?.dataset.action;
+        if (!action) return;
+        closeTreeMenu();
+        const { path, dir } = contextTarget;
+        const parent = dir ? path : path.replace(/\/[^/]*$/, "");
+        if (action === "open") pick(path);
+        else if (action === "new-file") await addFile(parent);
+        else if (action === "new-folder") await addDir(parent);
+        else if (action === "rename") await movePath(path, dir);
+        else if (action === "remove") removePath(path, dir);
+      });
+      document.addEventListener("pointerdown", (e) => {
+        if (!e.target.closest("#treeMenu")) closeTreeMenu();
+      });
+      document.addEventListener("click", (e) => {
+        if (e.target.closest("#treeMenu") || !contextTarget.path) return;
+        const row = e.target.closest(".row");
+        const path = row
+          ? row.dataset.dir !== undefined
+            ? row.dataset.dir
+            : row.dataset.p
+          : "";
+        if (path !== contextTarget.path) {
+          contextTarget = { path: "", dir: true };
+          renderTree();
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeTreeMenu();
+      });
+      $("treePane").addEventListener("scroll", closeTreeMenu);
+      $("tree").addEventListener("click", (e) => {
+        const r = e.target.closest(".row");
+        if (!r) return;
+        if (r.dataset.dir) {
+          const d = r.dataset.dir;
+          closed.has(d) ? closed.delete(d) : closed.add(d);
+          renderTree();
+        } else pick(r.dataset.p);
+      });
+      function clearDropIndicator() {
+        $("tree")
+          .querySelectorAll("[data-drop]")
+          .forEach((row) => {
+            delete row.dataset.drop;
+            delete row.dataset.dropLabel;
+          });
+        dragTarget = null;
+      }
+      function pathParent(path) {
+        const i = path.lastIndexOf("/");
+        return i < 0 ? "" : path.slice(0, i);
+      }
+      function fullTree() {
+        const currentQuery = query;
+        query = "";
+        const root = build();
+        query = currentQuery;
+        return root;
+      }
+      function findTreeNode(path) {
+        let node = fullTree();
+        for (const part of path.split("/").filter(Boolean)) {
+          node = node.kids.get(part);
+          if (!node) return null;
+        }
+        return node;
+      }
+      function setOrderAround(parentPath, movedPath, targetPath, after) {
+        const parent = parentPath ? findTreeNode(parentPath) : fullTree();
+        if (!parent) return;
+        const order = orderedChildren(parent)
+          .map((node) => node.path)
+          .filter((path) => path !== movedPath);
+        const index = order.indexOf(targetPath);
+        if (index < 0) return;
+        order.splice(index + (after ? 1 : 0), 0, movedPath);
+        treeOrder.set(parentPath, order);
+      }
+      function remapTreeOrder(from, to) {
+        const remap = (path) =>
+          path === from || path.startsWith(from + "/")
+            ? to + path.slice(from.length)
+            : path;
+        treeOrder = new Map(
+          [...treeOrder].map(([parent, children]) => [
+            remap(parent),
+            children.map(remap),
+          ]),
+        );
+      }
+      function moveTreeItem(source, destination, targetPath, after, reorder = true) {
+        if (destination === source || destination.startsWith(source + "/")) {
+          toast("A folder cannot be moved into itself or one of its children");
+          return;
+        }
+        const collision = findTreeNode(destination);
+        if (collision && collision.path !== source) {
+          toast(`An item named ${destination} already exists`);
+          return;
+        }
+        const targetParent = pathParent(targetPath);
+        if (reorder) setOrderAround(targetParent, destination, targetPath, after);
+        if (pathParent(source) !== pathParent(destination)) {
+          const oldOrder = treeOrder.get(pathParent(source));
+          if (oldOrder)
+            treeOrder.set(
+              pathParent(source),
+              oldOrder.filter((path) => path !== source),
+            );
+        }
+        remapTreeOrder(source, destination);
+        if (sel === source || sel?.startsWith(source + "/"))
+          sel = destination + sel.slice(source.length);
+        if (contextTarget.path === source || contextTarget.path.startsWith(source + "/"))
+          contextTarget.path = destination + contextTarget.path.slice(source.length);
+        ov({ op: "move", path: source, to: destination });
+      }
+      $("tree").addEventListener("dragstart", (e) => {
+        const row = e.target.closest(".row");
+        if (!row) return;
+        const dir = row.dataset.dir !== undefined;
+        dragSource = {
+          path: dir ? row.dataset.dir : row.dataset.p,
+          dir,
+        };
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragSource.path);
+        row.classList.add("dragging");
+      });
+      $("tree").addEventListener("dragover", (e) => {
+        if (!dragSource) return;
+        const row = e.target.closest(".row");
+        if (!row) {
+          clearDropIndicator();
+          return;
+        }
+        const isDir = row.dataset.dir !== undefined,
+          targetPath = isDir ? row.dataset.dir : row.dataset.p;
+        if (targetPath === dragSource.path) {
+          clearDropIndicator();
+          return;
+        }
+        let mode, label;
+        if (isDir) {
+          if (dragSource.dir && targetPath.startsWith(dragSource.path + "/")) {
+            clearDropIndicator();
+            return;
+          }
+          mode = "inside";
+          label = "Move inside";
+        } else {
+          const rect = row.getBoundingClientRect(),
+            after = e.clientY >= rect.top + rect.height / 2;
+          mode = after ? "after" : "before";
+          const sameParent =
+            pathParent(dragSource.path) === pathParent(targetPath);
+          label = sameParent
+            ? `Reorder ${after ? "after" : "before"}`
+            : `Move ${after ? "after" : "before"}`;
+        }
+        if (dragTarget?.row !== row || dragTarget.mode !== mode) {
+          clearDropIndicator();
+          row.dataset.drop = mode;
+          row.dataset.dropLabel = label;
+          dragTarget = { row, mode, targetPath, label };
+        }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+      $("tree").addEventListener("drop", (e) => {
+        if (!dragSource || !dragTarget) return;
+        e.preventDefault();
+        const source = dragSource,
+          target = dragTarget;
+        clearDropIndicator();
+        if (target.mode === "inside") {
+          const name = source.path.split("/").pop(),
+            destination = `${target.targetPath}/${name}`;
+          if (destination !== source.path)
+            moveTreeItem(source.path, destination, target.targetPath, true, false);
+        } else if (pathParent(source.path) === pathParent(target.targetPath)) {
+          setOrderAround(
+            pathParent(target.targetPath),
+            source.path,
+            target.targetPath,
+            target.mode === "after",
+          );
+          renderTree();
+          toast("Tree order changed");
+        } else {
+          const parent = pathParent(target.targetPath),
+            name = source.path.split("/").pop(),
+            destination = parent ? `${parent}/${name}` : name;
+          moveTreeItem(
+            source.path,
+            destination,
+            target.targetPath,
+            target.mode === "after",
+          );
+        }
+        dragSource = null;
+      });
+      $("tree").addEventListener("dragend", (e) => {
+        e.target.closest(".row")?.classList.remove("dragging");
+        clearDropIndicator();
+        dragSource = null;
+      });
+      $("tree").addEventListener("keydown", (e) => {
+        const r = e.target.closest(".row");
+        if (!r) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          r.click();
+        }
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const all = [...$("tree").querySelectorAll(".row")],
+            i = all.indexOf(r) + (e.key === "ArrowDown" ? 1 : -1);
+          all[i]?.focus();
+        }
+      });
+      $("q").oninput = (e) => {
+        query = e.target.value.trim();
+        renderTree();
+      };
+
+      /* ---------- editor ---------- */
+      function pick(p, force) {
+        if (
+          dirty &&
+          !force &&
+          !confirm("Discard unsaved edits to " + sel + "?")
+        )
+          return;
+        sel = p;
+        renderEditor();
+        renderTree();
+        if (matchMedia("(max-width:960px)").matches) view("edit");
+      }
+      function renderEditor() {
+        const f = files.find((x) => x.path === sel),
+          t = $("content");
+        dirty = false;
+        $("fname").textContent = f ? f.path : "No file selected";
+        t.disabled = !f;
+        t.value = f ? f.content : "";
+        $("dirty").hidden = true;
+        $("save").disabled = $("revert").disabled = true;
+      }
+      $("content").oninput = () => {
+        dirty = true;
+        $("dirty").hidden = false;
+        $("save").disabled = $("revert").disabled = false;
+      };
+      $("revert").onclick = () => renderEditor();
+      const save = () => {
+        if (!sel || !dirty) return;
+        ov({
+          op: "set_content",
+          path: sel,
+          mode: "custom",
+          content: $("content").value,
+        });
+        dirty = false;
+        toast("Saved as custom content");
+      };
+      $("save").onclick = save;
+      addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
+          save();
+        }
+      });
+      $("content").addEventListener("keydown", (e) => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          const t = e.target,
+            s = t.selectionStart;
+          t.setRangeText("    ", s, t.selectionEnd, "end");
+          t.oninput();
+        }
+      });
+
+      /* ---------- plan / checks ---------- */
+      function refresh() {
+        clearTimeout(timer);
+        timer = setTimeout(async () => {
+          try {
+            const r = await api("plan", { blueprint: bp });
+            files = r.files;
+            dirs = r.dirs || [];
+            issues = r.issues || [];
+          } catch (e) {
+            files = [];
+            dirs = [];
+            issues = [{ level: "error", message: e.message }];
+          }
+          if (sel && !files.some((f) => f.path === sel)) {
+            sel = null;
+            renderEditor();
+          } else if (sel && !dirty) renderEditor();
+          renderTree();
+          renderIssues();
+        }, 150);
+      }
+      function renderIssues() {
+        const er = issues.filter((i) => i.level === "error").length,
+          wr = issues.length - er,
+          s = $("status");
+        s.className = "pill " + (er ? "err" : wr ? "warn" : "");
+        s.textContent = er
+          ? `${er} error${er > 1 ? "s" : ""}`
+          : wr
+            ? `${wr} warning${wr > 1 ? "s" : ""}`
+            : "Ready to download";
+        $("download").disabled = !!er || !files.length;
+        $("issues").innerHTML = issues.length
+          ? issues
+              .map(
+                (i) =>
+                  `<div class="iss ${i.level === "error" ? "error" : ""}"><strong>${esc(i.level)}</strong><span>${esc(i.message)}</span></div>`,
+              )
+              .join("")
+          : '<div class="ok">✓ No problems found. The preview matches what will be generated.</div>';
+      }
+
+      /* ---------- structure edits ---------- */
+      const ov = (o) => {
+        bp.overrides.push(o);
+        refresh();
+      };
+      const selDir = () =>
+        sel && sel.includes("/") ? sel.replace(/[^/]*$/, "") : "";
+      async function addFile(parent = selDir()) {
+        const p = await ask(
+          "New file",
+          parent
+            ? `Enter a file name to add inside ${parent}/, or enter a project-relative path.`
+            : "Enter a path relative to the project root.",
+          "new_file.py",
+          "Add file",
+        );
+        const path = p && parent && !p.includes("/") ? `${parent}/${p}` : p;
+        if (path && !path.endsWith("/")) {
+          showCreatedPath(path, false);
+          ov({ op: "add", path, mode: "starter" });
+        }
+      }
+      async function addDir(parent = selDir()) {
+        const p = await ask(
+          "New folder",
+          parent
+            ? `Enter a folder name to add inside ${parent}/, or enter a project-relative path.`
+            : "Enter a path relative to the project root.",
+          "new_folder",
+          "Add folder",
+        );
+        const path = p && parent && !p.includes("/") ? `${parent}/${p}` : p;
+        if (path) {
+          const folder = path.replace(/\/?$/, "").replace(/\/+$/, "");
+          showCreatedPath(folder, true);
+          ov({ op: "add", path: `${folder}/` });
+        }
+      }
+      function showCreatedPath(path, dir) {
+        const clean = path.replace(/\/+$/, "");
+        query = "";
+        $("q").value = "";
+        const parts = clean.split("/");
+        for (let i = 1; i < parts.length; i++)
+          closed.delete(parts.slice(0, i).join("/"));
+        if (!contextTarget.path) contextTarget = { path: clean, dir };
+        if (dir) {
+          if (!dirs.includes(clean)) dirs.push(clean);
+        } else {
+          if (!files.some((file) => file.path === clean))
+            files.push({ path: clean, content: "", origin: "user" });
+        }
+        renderTree();
+      }
+      function removePath(path, dir = false) {
+        if (!confirm(`Remove ${dir ? "this folder and everything in it" : "this file"}?`))
+          return;
+        if (sel && (sel === path || sel.startsWith(path + "/"))) sel = null;
+        ov({ op: "remove", path });
+        renderEditor();
+      }
+      async function movePath(path, dir = false) {
+        const to = await ask(
+          dir ? "Rename or move folder" : "Rename or move file",
+          "Enter the new path for " + path,
+          path,
+          "Move",
+        );
+        if (to && to !== path) {
+          ov({ op: "move", path, to });
+          if (sel === path || sel?.startsWith(path + "/"))
+            sel = to + sel.slice(path.length);
+        }
+      }
+      $("addFile").onclick = () => addFile();
+      $("addDir").onclick = () => addDir();
+      $("rm").onclick = () => {
+        if (!sel) return toast("Select a file first");
+        removePath(sel);
+      };
+      $("mv").onclick = () => {
+        if (!sel) return toast("Select a file first");
+        movePath(sel);
+      };
+      $("cp").onclick = async () => {
+        const lines = [bp.project.name + "/"];
+        const walk = (n, pre) => {
+          const k = [...n.kids.values()].sort(
+            (a, b) => b.dir - a.dir || a.name.localeCompare(b.name),
+          );
+          k.forEach((c, i) => {
+            const l = i === k.length - 1;
+            lines.push(
+              pre + (l ? "└── " : "├── ") + c.name + (c.dir ? "/" : ""),
+            );
+            if (c.dir) walk(c, pre + (l ? "    " : "│   "));
+          });
+        };
+        const q = query;
+        query = "";
+        walk(build(), "");
+        query = q;
+        try {
+          await navigator.clipboard.writeText(lines.join("\n"));
+          toast("Tree copied");
+        } catch {
+          toast("Copy not permitted by the browser");
+        }
+      };
+
+      function createZip(projectFiles, projectDirs) {
+        const encoder = new TextEncoder(),
+          crcTable = new Uint32Array(256);
+        for (let n = 0; n < 256; n++) {
+          let c = n;
+          for (let k = 0; k < 8; k++)
+            c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+          crcTable[n] = c >>> 0;
+        }
+        const crc32 = (data) => {
+          let crc = 0xffffffff;
+          for (const byte of data)
+            crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+          return (crc ^ 0xffffffff) >>> 0;
+        };
+        const slug =
+          (bp.project.name || "maki-project")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") || "maki-project";
+        const entries = [
+          { name: `${slug}/`, data: new Uint8Array(), dir: true },
+          ...projectDirs.map((path) => ({
+            name: `${slug}/${path.replace(/\/+$/, "")}/`,
+            data: new Uint8Array(),
+            dir: true,
+          })),
+          ...projectFiles.map((file) => ({
+            name: `${slug}/${file.path}`,
+            data: encoder.encode(file.content),
+            dir: false,
+          })),
+        ];
+        const unique = new Map(entries.map((entry) => [entry.name, entry]));
+        if (unique.size > 0xffff)
+          throw new Error("This project has too many entries for a ZIP download.");
+        let offset = 0;
+        const localParts = [],
+          centralParts = [],
+          stamp = new Date(),
+          time =
+            (stamp.getHours() << 11) |
+            (stamp.getMinutes() << 5) |
+            Math.floor(stamp.getSeconds() / 2),
+          date =
+            ((Math.max(1980, stamp.getFullYear()) - 1980) << 9) |
+            ((stamp.getMonth() + 1) << 5) |
+            stamp.getDate();
+        for (const entry of unique.values()) {
+          const name = encoder.encode(entry.name),
+            data = entry.data,
+            crc = crc32(data);
+          if (
+            data.length > 0xffffffff ||
+            offset > 0xffffffff ||
+            name.length > 0xffff
+          )
+            throw new Error("This project is too large for a standard ZIP download.");
+          const local = new Uint8Array(30 + name.length),
+            localView = new DataView(local.buffer);
+          localView.setUint32(0, 0x04034b50, true);
+          localView.setUint16(4, 20, true);
+          localView.setUint16(6, 0x800, true);
+          localView.setUint16(8, 0, true);
+          localView.setUint16(10, time, true);
+          localView.setUint16(12, date, true);
+          localView.setUint32(14, crc, true);
+          localView.setUint32(18, data.length, true);
+          localView.setUint32(22, data.length, true);
+          localView.setUint16(26, name.length, true);
+          local.set(name, 30);
+          localParts.push(local, data);
+
+          const central = new Uint8Array(46 + name.length),
+            centralView = new DataView(central.buffer);
+          centralView.setUint32(0, 0x02014b50, true);
+          centralView.setUint16(4, 20, true);
+          centralView.setUint16(6, 20, true);
+          centralView.setUint16(8, 0x800, true);
+          centralView.setUint16(10, 0, true);
+          centralView.setUint16(12, time, true);
+          centralView.setUint16(14, date, true);
+          centralView.setUint32(16, crc, true);
+          centralView.setUint32(20, data.length, true);
+          centralView.setUint32(24, data.length, true);
+          centralView.setUint16(28, name.length, true);
+          centralView.setUint32(38, entry.dir ? 0x10 : 0, true);
+          centralView.setUint32(42, offset, true);
+          central.set(name, 46);
+          centralParts.push(central);
+          offset += local.length + data.length;
+        }
+        const centralSize = centralParts.reduce(
+            (size, part) => size + part.length,
+            0,
+          ),
+          end = new Uint8Array(22),
+          endView = new DataView(end.buffer);
+        if (offset + centralSize > 0xffffffff)
+          throw new Error("This project is too large for a standard ZIP download.");
+        endView.setUint32(0, 0x06054b50, true);
+        endView.setUint16(8, unique.size, true);
+        endView.setUint16(10, unique.size, true);
+        endView.setUint32(12, centralSize, true);
+        endView.setUint32(16, offset, true);
+        return new Blob([...localParts, ...centralParts, end], {
+          type: "application/zip",
+        });
+      }
+      /* ---------- download / blueprint ---------- */
+      $("download").onclick = async () => {
+        const button = $("download");
+        button.disabled = true;
+        try {
+          if (dirty) save();
+          const preview = await api("plan", { blueprint: bp });
+          const blocking = preview.issues.filter((issue) => issue.level === "error");
+          if (blocking.length)
+            throw new Error(blocking.map((issue) => issue.message).join("; "));
+          const blob = createZip(preview.files, preview.dirs || []),
+            slug =
+              (bp.project.name || "maki-project")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "") || "maki-project",
+            url = URL.createObjectURL(blob),
+            link = document.createElement("a");
+          link.href = url;
+          link.download = `${slug}.zip`;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          toast("Project ZIP downloaded");
+        } catch (e) {
+          toast(`Download failed: ${e.message}`);
+        } finally {
+          button.disabled = !!issues.some((issue) => issue.level === "error") || !files.length;
+        }
+      };
+      $("exp").onclick = () => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(
+          new Blob([JSON.stringify(bp, null, 2)], { type: "application/json" }),
+        );
+        a.download =
+          (bp.project.name || "maki").toLowerCase().replace(/\W+/g, "-") +
+          ".maki.json";
+        a.click();
+        toast("Blueprint exported");
+      };
+      $("imp").onclick = () => $("impf").click();
+      $("impf").onchange = async (e) => {
+        try {
+          bp = await api("migrate", {
+            blueprint: JSON.parse(await e.target.files[0].text()),
+          });
+          bp.overrides ||= [];
+          sel = null;
+          renderCfg();
+          refresh();
+          toast("Blueprint imported");
+        } catch (x) {
+          toast("Import failed: " + x.message);
+        }
+        e.target.value = "";
+      };
+
+      /* ---------- mobile tabs ---------- */
+      function view(v) {
+        $("main").dataset.view = v;
+        document
+          .querySelectorAll("nav.tabs button")
+          .forEach((b) => b.setAttribute("aria-selected", b.dataset.v === v));
+      }
+      document
+        .querySelectorAll("nav.tabs button")
+        .forEach((b) => (b.onclick = () => view(b.dataset.v)));
+
+      api("catalog")
+        .then((c) => {
+          cat = c;
+          renderCfg();
+          renderEditor();
+          refresh();
+        })
+        .catch((e) => {
+          $("status").textContent = "Not connected";
+          $("status").className = "pill err";
+          $("cfg").innerHTML =
+            `<div class="body"><div class="card"><strong>Can’t reach the Maki API.</strong><p class="tag">Open Studio with <code>maki studio</code> so the access token is in the URL.<br>${esc(e.message)}</p></div></div>`;
+        });
+    </script>
+  </body>
+</html>
